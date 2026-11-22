@@ -38,7 +38,7 @@ jobs:
         id: login
         uses: NuGet/login@v1
         with:
-          user: YOUR_NUGET_USERNAME
+          user: Tilted
 
       - name: Push package
         run: dotnet nuget push "artifacts/*.nupkg" --api-key "${{ steps.login.outputs.NUGET_API_KEY }}" --source https://www.nuget.org/api/v2/package --skip-duplicate
