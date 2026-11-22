@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net11.0</TargetFramework>
+        <LangVersion>latest</LangVersion>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <PackageId>Tilted.Result</PackageId>
+        <Version>0.1.0</Version>
+        <Authors>Tilted</Authors>
+        <Copyright>Copyright (c) 2026 Tilted</Copyright>
+        <Description>A compact Result&lt;TValue, TError&gt; type for .NET 11 built on C# 15 union types. Exhaustive pattern matching, implicit conversions, Map/Bind/Ensure/Tap, async composition, and exception capture.</Description>
+        <PackageTags>result;union;functional;error-handling;csharp;dotnet</PackageTags>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+        <RepositoryUrl>https://github.com/tilted-develop/Tilted.Result</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PackageProjectUrl>https://github.com/tilted-develop/Tilted.Result</PackageProjectUrl>
+        <IsPackable>true</IsPackable>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="..\README.md" Pack="true" PackagePath="\" />
+    </ItemGroup>
+
+</Project>

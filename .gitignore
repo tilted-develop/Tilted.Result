@@ -1,0 +1,27 @@
+# Build output
+bin/
+obj/
+artifacts/
+
+# Packages
+*.nupkg
+*.snupkg
+
+# Rider / ReSharper
+.idea/
+*.sln.iml
+_ReSharper*/
+*.DotSettings.user
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# Test results
+TestResults/
+*.trx
+
+# OS
+.DS_Store
+Thumbs.db

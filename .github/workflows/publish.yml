@@ -1,0 +1,40 @@
+name: Publish to NuGet
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '11.0.x'
+
+      - name: Restore
+        run: dotnet restore Tilted.Result.slnx
+
+      - name: Build
+        run: dotnet build Tilted.Result.slnx -c Release --no-restore
+
+      - name: Derive version from tag
+        run: echo "PACKAGE_VERSION=${GITHUB_REF_NAME#v}" >> "$GITHUB_ENV"
+
+      - name: Pack
+        run: dotnet pack Tilted.Result/Tilted.Result.csproj -c Release -p:Version=$PACKAGE_VERSION -o artifacts
+
+      - name: Push package
+        run: dotnet nuget push "artifacts/*.nupkg" --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+
+      - name: Push symbols
+        run: dotnet nuget push "artifacts/*.snupkg" --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
