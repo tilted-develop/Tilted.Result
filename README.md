@@ -18,6 +18,8 @@ A compact `Result` type for .NET 11 built on the C# 15 [union types](https://lea
 dotnet add package Tilted.Result
 ```
 
+The package is also mirrored to GitHub Packages: `https://nuget.pkg.github.com/tilted-develop/index.json`.
+
 Build from source:
 
 ```bash
@@ -182,30 +184,4 @@ string Describe(Result<int, string> result) => result switch
 ```bash
 dotnet build Tilted.Result.slnx
 dotnet pack Tilted.Result/Tilted.Result.csproj -c Release
-```
-
-## Releasing
-
-Publishing uses NuGet Trusted Publishing (OIDC); no long-lived API key is stored in the repository.
-
-1. On nuget.org, open **Trusted Publishing** and add a policy: owner = your GitHub account or organization, repository = `Tilted.Result`, workflow file = `publish.yml`.
-2. Set `user` in `.github/workflows/publish.yml` to your nuget.org username.
-3. Push a version tag:
-
-```bash
-git tag v0.1.0
-git push origin v0.1.0
-```
-
-The workflow packs with the tag version and pushes both `.nupkg` and `.snupkg` to nuget.org.
-
-## Solution layout
-
-```text
-Tilted.Result.slnx
-Tilted.Result/
-  Tilted.Result.csproj
-  Result.cs            Result<TValue, TError> union type
-  Result.Factory.cs    Ok / Fail / Try factories
-README.md
 ```

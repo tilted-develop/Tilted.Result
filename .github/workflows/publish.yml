@@ -6,8 +6,9 @@ on:
       - 'v*'
 
 permissions:
-  id-token: write
-  contents: read
+  id-token: write      # nuget.org Trusted Publishing (OIDC)
+  contents: write      # create a GitHub Release
+  packages: write      # publish to GitHub Packages
 
 jobs:
   publish:
@@ -34,14 +35,27 @@ jobs:
       - name: Pack
         run: dotnet pack Tilted.Result/Tilted.Result.csproj -c Release -p:Version=$PACKAGE_VERSION -o artifacts
 
-      - name: NuGet login (OIDC)
+      # nuget.org via Trusted Publishing (OIDC -> short-lived API key).
+      - name: NuGet login (nuget.org OIDC)
         id: login
         uses: NuGet/login@v1
         with:
           user: Tilted
 
-      - name: Push package
+      - name: Push to nuget.org
         run: dotnet nuget push "artifacts/*.nupkg" --api-key "${{ steps.login.outputs.NUGET_API_KEY }}" --source https://www.nuget.org/api/v2/package --skip-duplicate
 
-      - name: Push symbols
+      - name: Push symbols to nuget.org
         run: dotnet nuget push "artifacts/*.snupkg" --api-key "${{ steps.login.outputs.NUGET_API_KEY }}" --source https://www.nuget.org/api/v2/package --skip-duplicate
+
+      # GitHub Packages (NuGet registry) via the built-in GITHUB_TOKEN.
+      - name: Push to GitHub Packages
+        run: dotnet nuget push "artifacts/*.nupkg" --api-key "${{ secrets.GITHUB_TOKEN }}" --source https://nuget.pkg.github.com/tilted-develop/index.json --skip-duplicate
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            artifacts/*.nupkg
+            artifacts/*.snupkg
+          generate_release_notes: true
