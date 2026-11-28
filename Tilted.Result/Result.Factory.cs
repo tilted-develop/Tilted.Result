@@ -3,7 +3,7 @@ namespace Tilted.Result;
 /// <summary>
 /// Provides factory methods for creating <see cref="Result{TValue, TError}"/> values.
 /// </summary>
-public static class Result
+public static partial class Result
 {
     /// <summary>Creates a successful result that contains <paramref name="value"/>.</summary>
     /// <typeparam name="TValue">The type of the success value.</typeparam>

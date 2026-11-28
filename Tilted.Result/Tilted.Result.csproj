@@ -6,10 +6,10 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <PackageId>Tilted.Result</PackageId>
-        <Version>0.1.0</Version>
+        <Version>0.2.0</Version>
         <Authors>Tilted</Authors>
         <Copyright>Copyright (c) 2026 Tilted</Copyright>
-        <Description>A compact Result&lt;TValue, TError&gt; type for .NET 11 built on C# 15 union types. Exhaustive pattern matching, implicit conversions, Map/Bind/Ensure/Tap, async composition, and exception capture.</Description>
+        <Description>A compact Result&lt;TValue, TError&gt; type for .NET 11 built on C# 15 union types. Exhaustive pattern matching, implicit conversions, Map/Bind/Ensure/Tap, async composition, exception capture, and a Roslyn analyzer for invalid type arguments.</Description>
         <PackageTags>result;union;functional;error-handling;csharp;dotnet</PackageTags>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageReadmeFile>README.md</PackageReadmeFile>
@@ -24,7 +24,20 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <None Include="..\README.md" Pack="true" PackagePath="\" />
+        <None Include="../README.md" Pack="true" PackagePath="" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="../Tilted.Result.Analyzers/Tilted.Result.Analyzers.csproj"
+                          ReferenceOutputAssembly="false"
+                          OutputItemType="Analyzer" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="../Tilted.Result.Analyzers/bin/$(Configuration)/netstandard2.0/Tilted.Result.Analyzers.dll"
+              Pack="true"
+              PackagePath="analyzers/dotnet/cs"
+              Visible="false" />
     </ItemGroup>
 
 </Project>

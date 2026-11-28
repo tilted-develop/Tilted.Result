@@ -35,7 +35,8 @@ namespace Tilted.Result;
 /// <para>
 /// Members that must produce a value or run a side effect (<see cref="Match{TResult}"/>,
 /// <see cref="Map{TResult}"/>, <see cref="MapError{TNewError}"/>, <see cref="Bind{TResult}"/>,
-/// <c>Tap</c>, <c>TapError</c>, <c>Ensure</c>, <c>MapAsync</c>, <c>BindAsync</c>,
+/// <c>Select</c>, <c>SelectMany</c>, <c>Tap</c>, <c>TapError</c>, <c>Ensure</c>, <c>MapAsync</c>, <c>BindAsync</c>,
+/// <c>MapErrorAsync</c>, <c>MatchAsync</c>, <c>TapAsync</c>, <c>TapErrorAsync</c>, <c>EnsureAsync</c>,
 /// <see cref="Unwrap"/>, <see cref="UnwrapError"/>) throw <see cref="InvalidOperationException"/>
 /// on a <c>default</c> result. Safe members (<see cref="IsSuccess"/>, <see cref="IsError"/>,
 /// <see cref="HasValue"/>, <see cref="TryGetValue"/>, <see cref="TryGetError"/>,
@@ -46,7 +47,7 @@ namespace Tilted.Result;
 /// <typeparam name="TValue">The type of the success value.</typeparam>
 /// <typeparam name="TError">The user-defined type of the error value.</typeparam>
 [Union]
-public readonly struct Result<TValue, TError> : IUnion, IEquatable<Result<TValue, TError>>
+public readonly partial struct Result<TValue, TError> : IUnion, IEquatable<Result<TValue, TError>>
 {
     /// <summary>Creates a successful result that contains <paramref name="value"/>.</summary>
     /// <param name="value">The success value. Must not be <see langword="null"/>.</param>
@@ -216,6 +217,41 @@ public readonly struct Result<TValue, TError> : IUnion, IEquatable<Result<TValue
     }
 
     /// <summary>
+    /// LINQ projection alias for <see cref="Map{TResult}"/>; enables <c>select</c> in query expressions.
+    /// </summary>
+    /// <typeparam name="TResult">The type of the projected success value.</typeparam>
+    /// <param name="selector">The transformation to apply to a success value.</param>
+    /// <exception cref="InvalidOperationException">This result is a <c>default</c> value without any value.</exception>
+    public Result<TResult, TError> Select<TResult>(Func<TValue, TResult> selector) => Map(selector);
+
+    /// <summary>
+    /// LINQ binding alias for <see cref="Bind{TResult}"/>; enables a chained <c>from</c> in query expressions.
+    /// </summary>
+    /// <typeparam name="TResult">The type of the bound success value.</typeparam>
+    /// <param name="selector">The continuation to apply to a success value.</param>
+    /// <exception cref="InvalidOperationException">This result is a <c>default</c> value without any value.</exception>
+    public Result<TResult, TError> SelectMany<TResult>(Func<TValue, Result<TResult, TError>> selector) => Bind(selector);
+
+    /// <summary>
+    /// Enables <c>from x in source from y in collectionSelector(x) select resultSelector(x, y)</c>
+    /// in query expressions. The error of the nested result is propagated unchanged.
+    /// </summary>
+    /// <typeparam name="TCollection">The type of the intermediate success value.</typeparam>
+    /// <typeparam name="TResult">The type of the projected success value.</typeparam>
+    /// <param name="collectionSelector">Produces the next result from a success value.</param>
+    /// <param name="resultSelector">Combines both success values into the projected value.</param>
+    /// <exception cref="InvalidOperationException">This result is a <c>default</c> value without any value.</exception>
+    public Result<TResult, TError> SelectMany<TCollection, TResult>(
+        Func<TValue, Result<TCollection, TError>> collectionSelector,
+        Func<TValue, TCollection, TResult> resultSelector)
+    {
+        ArgumentNullException.ThrowIfNull(collectionSelector);
+        ArgumentNullException.ThrowIfNull(resultSelector);
+
+        return Bind(success => collectionSelector(success).Map(value => resultSelector(success, value)));
+    }
+
+    /// <summary>
     /// Invokes <paramref name="onSuccess"/> for a success value and returns this result unchanged.
     /// </summary>
     /// <param name="onSuccess">The side effect to run for a success value.</param>
@@ -323,51 +359,6 @@ public readonly struct Result<TValue, TError> : IUnion, IEquatable<Result<TValue
             TError => this,
             _ => throw new InvalidOperationException("The result does not hold a value.")
         };
-    }
-
-    /// <summary>
-    /// Asynchronously maps the success value using <paramref name="map"/>.
-    /// Error values are propagated unchanged.
-    /// </summary>
-    /// <typeparam name="TResult">The type of the mapped success value.</typeparam>
-    /// <param name="map">The asynchronous transformation to apply to a success value.</param>
-    /// <exception cref="InvalidOperationException">This result is a <c>default</c> value without any value.</exception>
-    public async ValueTask<Result<TResult, TError>> MapAsync<TResult>(Func<TValue, ValueTask<TResult>> map)
-    {
-        ArgumentNullException.ThrowIfNull(map);
-
-        switch (Value)
-        {
-            case TValue success:
-                return new Result<TResult, TError>(await map(success).ConfigureAwait(false));
-            case TError failure:
-                return new Result<TResult, TError>(failure);
-            default:
-                throw new InvalidOperationException("The result does not hold a value.");
-        }
-    }
-
-    /// <summary>
-    /// Asynchronously binds the success value using <paramref name="bind"/>.
-    /// Error values are propagated unchanged.
-    /// </summary>
-    /// <typeparam name="TResult">The type of the bound success value.</typeparam>
-    /// <param name="bind">The asynchronous continuation to apply to a success value.</param>
-    /// <exception cref="InvalidOperationException">This result is a <c>default</c> value without any value.</exception>
-    public async ValueTask<Result<TResult, TError>> BindAsync<TResult>(
-        Func<TValue, ValueTask<Result<TResult, TError>>> bind)
-    {
-        ArgumentNullException.ThrowIfNull(bind);
-
-        switch (Value)
-        {
-            case TValue success:
-                return await bind(success).ConfigureAwait(false);
-            case TError failure:
-                return new Result<TResult, TError>(failure);
-            default:
-                throw new InvalidOperationException("The result does not hold a value.");
-        }
     }
 
     /// <inheritdoc />

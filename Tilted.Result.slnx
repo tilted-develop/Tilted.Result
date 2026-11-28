@@ -1,3 +1,4 @@
 <Solution>
   <Project Path="Tilted.Result/Tilted.Result.csproj" />
+  <Project Path="Tilted.Result.Analyzers/Tilted.Result.Analyzers.csproj" />
 </Solution>
